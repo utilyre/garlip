@@ -11,7 +11,7 @@ func main() {
 	mux.HandleFunc("/echo", handleEcho)
 
 	log.Println("Listening on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	log.Fatal(http.ListenAndServe("", mux))
 }
 
 func handleEcho(w http.ResponseWriter, r *http.Request) {

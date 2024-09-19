@@ -1,0 +1,7 @@
+FROM golang:1.23.0-alpine3.20
+
+RUN go install github.com/cespare/reflex@latest
+
+WORKDIR /app
+
+CMD ["reflex", "-c.reflex.conf"]

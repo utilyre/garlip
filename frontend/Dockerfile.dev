@@ -1,0 +1,7 @@
+FROM node:20.17.0-alpine3.20
+
+RUN npm install -g pnpm
+
+WORKDIR /app
+
+CMD ["pnpm", "dev", "-p80"]
