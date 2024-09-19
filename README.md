@@ -3,6 +3,12 @@
 Garlip is a question bank capable of creating forms and analyzing answers
 according to respondents, questions, and topics.
 
+## Development
+
+```bash
+docker compose -f compose.dev.yaml up
+```
+
 ## Stack
 
 ## Back-End
