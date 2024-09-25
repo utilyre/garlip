@@ -6,6 +6,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASS}
     volumes:
       - database:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
     restart: unless-stopped
 
   backend:
