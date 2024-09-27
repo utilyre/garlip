@@ -63,6 +63,5 @@ CREATE TABLE "optional_answers" (
     "submitted_at" TIMESTAMP NOT NULL,
 
     "participent_id" INTEGER REFERENCES "accounts",
-    "question_id" INTEGER REFERENCES "questions" NOT NULL UNIQUE,
     "option_id" INTEGER REFERENCES "options" NOT NULL
 );
