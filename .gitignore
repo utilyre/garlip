@@ -1,2 +1,3 @@
 /.env
 /backend/atlas.hcl
+/backend/internal/postgres
