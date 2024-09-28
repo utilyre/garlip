@@ -56,11 +56,10 @@ according to respondents, questions, and topics.
 3. Generate ORM code using sqlc:
 
    ```bash
-   cd backend
-   sqlc generate
+   (cd backend && sqlc generate)
    ```
 
-4. Spin up services:
+4. Spin up all services:
 
    ```bash
    docker compose -f compose.dev.yaml up
@@ -69,7 +68,7 @@ according to respondents, questions, and topics.
 5. Apply application's schema to the database:
 
    ```bash
-   atlas schema apply --env=local
+   (cd backend && atlas schema apply --env=local)
    ```
 
 ## Stack
