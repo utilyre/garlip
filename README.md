@@ -47,7 +47,7 @@ according to respondents, questions, and topics.
 
    ```hcl
    env "local" {
-     src = "file://backend/schema.sql"
+     src = "file://schema.sql"
      url = "postgres://admin:secret@localhost:5432?search_path=public&sslmode=disable"
      dev = "docker://postgres/16.4-alpine3.20/dev?search_path=public"
    }
