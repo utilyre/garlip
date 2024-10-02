@@ -4,4 +4,4 @@ RUN go install github.com/mitranim/gow@latest
 
 WORKDIR /app
 
-CMD ["gow", "-r=false", "run", "./cmd/server"]
+CMD ["gow", "-r=false", "run", "./cmd/server", "-port=80"]

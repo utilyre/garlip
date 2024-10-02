@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"garlip/internal/postgres"
 	"garlip/internal/service"
 	"io"
@@ -11,6 +12,13 @@ import (
 
 	_ "github.com/lib/pq"
 )
+
+var port string
+
+func init() {
+	flag.StringVar(&port, "port", "8080", "specify a port number on which to start the application")
+	flag.Parse()
+}
 
 func main() {
 	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
@@ -26,8 +34,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/echo", handleEcho)
 
-	log.Println("Listening on http://localhost:8080")
-	log.Fatal(http.ListenAndServe("", mux))
+	log.Printf("Listening on http://localhost:%s\n", port)
+	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
 
 func handleEcho(w http.ResponseWriter, r *http.Request) {
