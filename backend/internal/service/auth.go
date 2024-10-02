@@ -15,6 +15,8 @@ import (
 
 var (
 	ErrAccountNotFound = errors.New("account not found")
+	ErrInvalidToken    = errors.New("invalid token")
+	ErrExpiredToken    = errors.New("expired token")
 )
 
 type ValidationError struct {
@@ -90,8 +92,8 @@ type AuthLoginParams struct {
 }
 
 type JWTClaims struct {
-	jwt.RegisteredClaims
 	Username string
+	jwt.RegisteredClaims
 }
 
 func (a *Auth) Login(ctx context.Context, params AuthLoginParams) (string, error) {
@@ -138,15 +140,42 @@ func (a *Auth) Login(ctx context.Context, params AuthLoginParams) (string, error
 		return "", fmt.Errorf("bcrypt: %w", err)
 	}
 
-	var claims JWTClaims
-	claims.Username = params.Username
-	claims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Hour))
+	claims := &JWTClaims{
+		Username: params.Username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+		},
+	}
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodES256, claims).
-		SignedString([]byte("secret"))
+		SignedString([]byte("TODO"))
 	if err != nil {
 		return "", fmt.Errorf("jwt: %w", err)
 	}
 
 	return token, nil
+}
+
+func (a *Auth) VerifyToken(ctx context.Context, token string) (username string, err error) {
+	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if method, ok := t.Method.(*jwt.SigningMethodECDSA); !ok ||
+			method != jwt.SigningMethodES256 {
+			return nil, ErrInvalidToken
+		}
+
+		return []byte("TODO"), nil
+	})
+	if err != nil {
+		return "", fmt.Errorf("jwt: %w", err)
+	}
+
+	claims, ok := t.Claims.(*JWTClaims)
+	if !ok {
+		return "", fmt.Errorf("jwt: %w", ErrInvalidToken)
+	}
+	if time.Now().After(claims.ExpiresAt.Time) {
+		return "", fmt.Errorf("jwt: %w", ErrExpiredToken)
+	}
+
+	return claims.Username, nil
 }
