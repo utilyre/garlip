@@ -47,6 +47,16 @@ CREATE TABLE "question_topics" (
     "created_at" TIMESTAMP NOT NULL
 );
 
+CREATE TABLE "submissions" (
+    "id" SERIAL PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL,
+
+    "respondent_id" INTEGER REFERENCES "accounts",
+    "form_id" INTEGER REFERENCES "forms" NOT NULL,
+
+    "note" TEXT
+);
+
 CREATE TABLE "options" (
     "id" SERIAL PRIMARY KEY,
     "created_at" TIMESTAMP NOT NULL,
@@ -60,8 +70,7 @@ CREATE TABLE "options" (
 
 CREATE TABLE "optional_answers" (
     "id" SERIAL PRIMARY KEY,
-    "submitted_at" TIMESTAMP NOT NULL,
 
-    "participent_id" INTEGER REFERENCES "accounts",
+    "submission_id" INTEGER REFERENCES "submissions" NOT NULL,
     "option_id" INTEGER REFERENCES "options" NOT NULL
 );
