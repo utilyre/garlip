@@ -3,6 +3,12 @@ INSERT INTO accounts
 (created_at, updated_at, username, password, fullname)
 VALUES (NOW(), NOW(), $1, $2, $3);
 
+-- name: GetAccountPasswordByUsername :one
+SELECT password
+FROM accounts
+WHERE username = $1
+LIMIT 1;
+
 -- name: GetAnswersCount :many
 SELECT q.stem stem, o.description description, o.correct correct, COUNT(*) num_answer
 FROM optional_answers oa
