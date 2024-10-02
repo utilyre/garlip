@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"garlip/internal/postgres"
+	"os"
 	"regexp"
 	"time"
 
@@ -148,7 +149,7 @@ func (a *Auth) Login(ctx context.Context, params AuthLoginParams) (string, error
 	}
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodES256, claims).
-		SignedString([]byte("TODO"))
+		SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return "", fmt.Errorf("jwt: %w", err)
 	}
@@ -163,7 +164,7 @@ func (a *Auth) VerifyToken(ctx context.Context, token string) (username string, 
 			return nil, ErrInvalidToken
 		}
 
-		return []byte("TODO"), nil
+		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {
 		return "", fmt.Errorf("jwt: %w", err)

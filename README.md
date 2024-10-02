@@ -40,6 +40,8 @@ according to respondents, questions, and topics.
    DB_PASS=secret
 
    BE_PORT=8080
+   BE_JWT_SECRET=secret
+
    FE_PORT=3000
    ```
 
