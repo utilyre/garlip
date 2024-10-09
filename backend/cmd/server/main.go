@@ -3,13 +3,15 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
+	"garlip/internal/api"
 	"garlip/internal/postgres"
 	"garlip/internal/service"
-	"io"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
 )
 
@@ -27,19 +29,27 @@ func main() {
 	}
 
 	queries := postgres.New(db)
-	authSvc := service.Auth{Queries: queries}
+	authSvc := &service.Auth{Queries: queries}
 
-	_ = authSvc
+	mux := chi.NewMux()
+	apiV1 := chi.NewRouter()
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/echo", handleEcho)
+	mux.Get("/helloworld", handleHelloWorld)
+	mux.Mount("/api/v1", apiV1)
+
+	apiV1.Route("/auth", func(r chi.Router) {
+		authAPI := &api.Auth{AuthSVC: authSvc}
+
+		r.Post("/register", authAPI.Register)
+		r.Post("/login", authAPI.Login)
+	})
 
 	log.Printf("Listening on http://localhost:%s\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
 
-func handleEcho(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-type", r.Header.Get("content-type"))
+func handleHelloWorld(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", r.Header.Get("content-type"))
 	w.WriteHeader(http.StatusOK)
-	_, _ = io.Copy(w, r.Body)
+	_, _ = fmt.Fprint(w, "Hello world!")
 }

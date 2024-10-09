@@ -67,7 +67,7 @@ func (a *Auth) Register(ctx context.Context, params AuthRegisterParams) error {
 	if len(params.Password) < 8 {
 		return ValidationError{
 			Param: "password",
-			Err:   errors.New("short than 8 chars"),
+			Err:   errors.New("shorter than 8 chars"),
 		}
 	}
 
@@ -97,7 +97,7 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-func (a *Auth) Login(ctx context.Context, params AuthLoginParams) (string, error) {
+func (a *Auth) Login(ctx context.Context, params AuthLoginParams) (token string, err error) {
 	if len(params.Username) < 3 {
 		return "", ValidationError{
 			Param: "username",
@@ -121,7 +121,7 @@ func (a *Auth) Login(ctx context.Context, params AuthLoginParams) (string, error
 	if len(params.Password) < 8 {
 		return "", ValidationError{
 			Param: "password",
-			Err:   errors.New("short than 8 chars"),
+			Err:   errors.New("shorter than 8 chars"),
 		}
 	}
 
@@ -148,7 +148,7 @@ func (a *Auth) Login(ctx context.Context, params AuthLoginParams) (string, error
 		},
 	}
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodES256, claims).
+	token, err = jwt.NewWithClaims(jwt.SigningMethodES256, claims).
 		SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return "", fmt.Errorf("jwt: %w", err)
