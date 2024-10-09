@@ -68,7 +68,7 @@ CREATE TABLE "options" (
     "correct" BOOLEAN NOT NULL DEFAULT false
 );
 
-CREATE TABLE "optional_answers" (
+CREATE TABLE "answers" (
     "id" SERIAL PRIMARY KEY,
 
     "submission_id" INTEGER REFERENCES "submissions" NOT NULL,
