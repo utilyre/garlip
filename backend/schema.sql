@@ -72,5 +72,8 @@ CREATE TABLE "optional_answers" (
     "id" SERIAL PRIMARY KEY,
 
     "submission_id" INTEGER REFERENCES "submissions" NOT NULL,
-    "option_id" INTEGER REFERENCES "options" NOT NULL
+    "question_id" INTEGER REFERENCES "questions" NOT NULL,
+    "option_id" INTEGER REFERENCES "options" NOT NULL,
+
+    UNIQUE ("submission_id", "question_id")
 );
