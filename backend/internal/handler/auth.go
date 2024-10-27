@@ -1,4 +1,4 @@
-package api
+package handler
 
 import (
 	"encoding/json"
@@ -7,11 +7,11 @@ import (
 	"net/http"
 )
 
-type Auth struct {
-	AuthSVC *service.Auth
+type AuthHandler struct {
+	AuthSVC *service.AuthService
 }
 
-func (a *Auth) Register(w http.ResponseWriter, r *http.Request) {
+func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	type Request struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -43,7 +43,7 @@ func (a *Auth) Register(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *Auth) Login(w http.ResponseWriter, r *http.Request) {
+func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	type Request struct {
 		Username string `json:"username"`
 		Password string `json:"password"`

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"garlip/internal/api"
+	"garlip/internal/handler"
 	"garlip/internal/postgres"
 	"garlip/internal/service"
 	"log"
@@ -38,7 +38,7 @@ func main() {
 	mux.Mount("/api/v1", apiV1)
 
 	apiV1.Route("/auth", func(r chi.Router) {
-		authAPI := &api.Auth{AuthSVC: authSvc}
+		authAPI := &handler.AuthHandler{AuthSVC: authSvc}
 
 		r.Post("/register", authAPI.Register)
 		r.Post("/login", authAPI.Login)

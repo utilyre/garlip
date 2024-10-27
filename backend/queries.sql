@@ -11,7 +11,7 @@ LIMIT 1;
 
 -- name: GetAnswersCount :many
 SELECT q.stem stem, o.description description, o.correct correct, COUNT(*) num_answer
-FROM optional_answers oa
+FROM answers oa
 JOIN options o
 ON o.id = oa.option_id
 JOIN questions q

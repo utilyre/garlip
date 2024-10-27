@@ -33,7 +33,7 @@ func (e ValidationError) Unwrap() error {
 	return e.Err
 }
 
-type Auth struct {
+type AuthService struct {
 	Queries *postgres.Queries
 }
 
@@ -43,7 +43,7 @@ type AuthRegisterParams struct {
 	Fullname string
 }
 
-func (a *Auth) Register(ctx context.Context, params AuthRegisterParams) error {
+func (a *AuthService) Register(ctx context.Context, params AuthRegisterParams) error {
 	if len(params.Username) < 3 {
 		return ValidationError{
 			Param: "username",
@@ -97,7 +97,7 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-func (a *Auth) Login(ctx context.Context, params AuthLoginParams) (token string, err error) {
+func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token string, err error) {
 	if len(params.Username) < 3 {
 		return "", ValidationError{
 			Param: "username",
@@ -157,7 +157,7 @@ func (a *Auth) Login(ctx context.Context, params AuthLoginParams) (token string,
 	return token, nil
 }
 
-func (a *Auth) VerifyToken(ctx context.Context, token string) (username string, err error) {
+func (a *AuthService) VerifyToken(ctx context.Context, token string) (username string, err error) {
 	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if method, ok := t.Method.(*jwt.SigningMethodECDSA); !ok ||
 			method != jwt.SigningMethodES256 {
