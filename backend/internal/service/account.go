@@ -52,10 +52,14 @@ func (as AccountService) Update(ctx context.Context, params AccountUpdateParams)
 		}
 	}
 
-	as.Queries.UpdateAccount(ctx, postgres.UpdateAccountParams{
+	if err := as.Queries.UpdateAccount(ctx, postgres.UpdateAccountParams{
 		ID:       params.ID,
 		Username: params.Username,
 		Fullname: params.Fullname,
 		Bio:      params.Bio,
-	})
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
