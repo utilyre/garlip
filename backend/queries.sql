@@ -3,6 +3,14 @@ INSERT INTO accounts
 (created_at, updated_at, username, password, fullname)
 VALUES (NOW(), NOW(), $1, $2, $3);
 
+-- name: UpdateAccount :exec
+UPDATE "accounts"
+SET
+    "username" = COALESCE(NULLIF(@username::VARCHAR(50), ''), "username"),
+    "fullname" = COALESCE(NULLIF(@fullname::VARCHAR(100), ''), "fullname"),
+    "bio" = COALESCE(NULLIF(@bio::TEXT, ''), "bio")
+WHERE "id" = $1;
+
 -- name: GetAccountPasswordByUsername :one
 SELECT password
 FROM accounts
