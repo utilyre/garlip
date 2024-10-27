@@ -64,7 +64,7 @@ according to respondents, questions, and topics.
 4. Spin up all services:
 
    ```bash
-   docker compose -f compose.dev.yaml up
+   docker compose up
    ```
 
 5. Apply application's schema to the database:
@@ -72,38 +72,3 @@ according to respondents, questions, and topics.
    ```bash
    (cd backend && atlas schema apply --env=local)
    ```
-
-## Stack
-
-### Back-End
-
-- Go
-- PostgreSQL
-- Atlas
-- sqlc
-- Chi
-
-### Front-End
-
-- Next
-- Tailwind
-- shadcn/ui
-- Recharts
-
-## Features
-
-- [ ] auth
-- [ ] creating forms
-- [ ] sharing forms
-- [ ] publising/closing forms
-- [ ] bar charts
-- [ ] dashboard
-  - [ ] created forms (from newest to oldest)
-  - [ ] participated forms (from newest to oldest)
-- [ ] analytics
-  - [ ] How many participents answered correctly to a specific topic in a specific timeline?
-  - [ ] How many participents answered to each choice of a question?
-
-## Ideas
-
-- Use AI to score descriptive questions
