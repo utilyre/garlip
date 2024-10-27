@@ -52,6 +52,7 @@ CREATE TABLE "submissions" (
     "form_id" INTEGER NOT NULL REFERENCES "forms" ON DELETE CASCADE,
 
     "created_at" TIMESTAMP NOT NULL,
+    "updated_at" TIMESTAMP NOT NULL,
     "note" TEXT
 );
 
