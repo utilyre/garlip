@@ -1,3 +1,2 @@
 /.env
-/backend/atlas.hcl
-/backend/internal/postgres
+/backend/internal/queries
