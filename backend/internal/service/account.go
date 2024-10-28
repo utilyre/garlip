@@ -11,14 +11,14 @@ type AccountService struct {
 	Queries *postgres.Queries
 }
 
-type AccountUpdateParams struct {
+type AccountUpdateByIDParams struct {
 	ID       int32
 	Username string
 	Fullname string
 	Bio      string
 }
 
-func (as AccountService) Update(ctx context.Context, params AccountUpdateParams) error {
+func (as AccountService) UpdateByID(ctx context.Context, params AccountUpdateByIDParams) error {
 	if len(params.Username) < 3 {
 		return ValidationError{
 			Param: "username",

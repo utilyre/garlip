@@ -29,7 +29,7 @@ func main() {
 	}
 
 	queries := postgres.New(db)
-	authSvc := &service.Auth{Queries: queries}
+	authSvc := &service.AuthService{Queries: queries}
 
 	mux := chi.NewMux()
 	apiV1 := chi.NewRouter()
