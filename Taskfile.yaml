@@ -1,0 +1,52 @@
+version: "3"
+
+tasks:
+  start:
+    desc: Create and start services
+    cmds:
+      - docker compose up -d
+
+  stop:
+    desc: Stop and remove services
+    cmds:
+      - docker compose down
+
+  watch:
+    desc: View log output from services
+    cmds:
+      - docker compose logs -f
+
+  migrate:make:
+    desc: Create a pair of up/down migrations
+    dir: ./backend
+    cmds:
+      - |
+        printf "name: "
+        read name
+        migrate create -dir=migrations -seq -ext=sql "$name"
+
+  migrate:up:
+    desc: Apply up migrations
+    dotenv: [.env]
+    cmds:
+      - >
+        migrate
+        -path=backend/migrations
+        -database=postgres://${DB_USER}:${DB_PASS}@localhost:5432/${DB_NAME}\?sslmode=disable
+        up
+
+  migrate:down:
+    desc: Apply one down migration
+    dotenv: [.env]
+    cmds:
+      - >
+        migrate
+        -path=backend/migrations
+        -database=postgres://${DB_USER}:${DB_PASS}@localhost:5432/${DB_NAME}\?sslmode=disable
+        down 1
+
+  queries:
+    desc: Generate Go source code from SQL queries
+    dir: ./backend
+    cmds:
+      - sqlc generate
