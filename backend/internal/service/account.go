@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 	"errors"
-	"garlip/internal/postgres"
+	"garlip/internal/queries"
 	"regexp"
 )
 
 type AccountService struct {
-	Queries *postgres.Queries
+	Queries *queries.Queries
 }
 
 type AccountUpdateByIDParams struct {
@@ -52,7 +52,7 @@ func (as AccountService) UpdateByID(ctx context.Context, params AccountUpdateByI
 		}
 	}
 
-	if err := as.Queries.UpdateAccount(ctx, postgres.UpdateAccountParams{
+	if err := as.Queries.UpdateAccount(ctx, queries.UpdateAccountParams{
 		ID:       params.ID,
 		Username: params.Username,
 		Fullname: params.Fullname,

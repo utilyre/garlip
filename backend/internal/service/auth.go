@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"garlip/internal/postgres"
+	"garlip/internal/queries"
 	"os"
 	"regexp"
 	"time"
@@ -34,7 +34,7 @@ func (e ValidationError) Unwrap() error {
 }
 
 type AuthService struct {
-	Queries *postgres.Queries
+	Queries *queries.Queries
 }
 
 type AuthRegisterParams struct {
@@ -76,7 +76,7 @@ func (a *AuthService) Register(ctx context.Context, params AuthRegisterParams) e
 		return fmt.Errorf("bcrypt: %w", err)
 	}
 
-	if err := a.Queries.CreateAccount(ctx, postgres.CreateAccountParams{
+	if err := a.Queries.CreateAccount(ctx, queries.CreateAccountParams{
 		Username: params.Username,
 		Password: hash,
 		Fullname: sql.NullString{String: params.Fullname, Valid: true},

@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"garlip/internal/handler"
-	"garlip/internal/postgres"
+	"garlip/internal/queries"
 	"garlip/internal/service"
 	"log"
 	"net/http"
@@ -28,8 +28,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	queries := postgres.New(db)
-	authSvc := &service.AuthService{Queries: queries}
+	qs := queries.New(db)
+	authSvc := &service.AuthService{Queries: qs}
 
 	mux := chi.NewMux()
 	apiV1 := chi.NewRouter()
