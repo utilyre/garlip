@@ -12,6 +12,7 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/lib/pq"
 )
 
@@ -34,6 +35,8 @@ func main() {
 	mux := chi.NewMux()
 	apiV1 := chi.NewRouter()
 
+	mux.Use(middleware.Logger)
+	mux.Use(middleware.Recoverer)
 	mux.Get("/helloworld", handleHelloWorld)
 	mux.Mount("/api/v1", apiV1)
 
