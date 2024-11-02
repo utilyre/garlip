@@ -24,6 +24,7 @@ func init() {
 }
 
 func main() {
+	log.Println("Connecting to", os.Getenv("DB_URL"))
 	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
 	if err != nil {
 		log.Fatal(err)
