@@ -7,7 +7,9 @@ according to respondents, questions, and topics.
 
 ### Prerequisites
 
-- [Docker Engine](https://docs.docker.com/engine)
+- [Docker](https://docker.com)
+
+- [Task](https://taskfile.dev)
 
 - [Go](https://go.dev)
 
@@ -19,10 +21,10 @@ according to respondents, questions, and topics.
   npm install -g pnpm
   ```
 
-- [Atlas](https://atlasgo.io)
+- [migrate](https://github.com/golang-migrate/migrate)
 
   ```bash
-  pnpm add -g @ariga/atlas
+  go install -tags=postgres github.com/golang-migrate/migrate/v4/cmd/migrate@latest
   ```
 
 - [sqlc](https://sqlc.dev)
@@ -38,37 +40,32 @@ according to respondents, questions, and topics.
    ```bash
    DB_USER=admin
    DB_PASS=secret
+   DB_NAME=garlip
 
    BE_PORT=8080
-   BE_JWT_SECRET=secret
+   JWT_SECRET=secret
 
    FE_PORT=3000
    ```
 
-2. Configure Atlas at `backend/atlas.hcl`:
-
-   ```hcl
-   env "local" {
-     src = "file://schema.sql"
-     url = "postgres://admin:secret@localhost:5432?search_path=public&sslmode=disable"
-     dev = "docker://postgres/16.4-alpine3.20/dev?search_path=public"
-   }
-   ```
-
-3. Generate ORM code using sqlc:
+2. Generate Go source code from SQL queries:
 
    ```bash
-   (cd backend && sqlc generate)
+   task queries
    ```
 
 4. Spin up all services:
 
    ```bash
-   docker compose up
+   task start
    ```
 
-5. Apply application's schema to the database:
+5. Apply migrations:
 
    ```bash
-   (cd backend && atlas schema apply --env=local)
+   task migrate:up
    ```
+
+### Tips
+
+- Run `task -l` to get a list of all available commands.
