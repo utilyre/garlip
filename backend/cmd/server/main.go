@@ -1,7 +1,7 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"errors"
 	"flag"
 	"garlip/internal/handler"
@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v5"
 	"github.com/utilyre/xmate/v2"
 )
 
@@ -26,13 +26,14 @@ func init() {
 
 func main() {
 	log.Println("Connecting to", os.Getenv("DB_URL"))
-	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
+	db, err := pgx.Connect(context.Background(), os.Getenv("DB_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close(context.Background())
 
-	qs := queries.New(db)
-	authSvc := &service.AuthService{Queries: qs}
+	pgQueries := queries.New(db)
+	authSvc := &service.AuthService{Queries: pgQueries}
 
 	mux := chi.NewMux()
 	apiV1 := chi.NewRouter()
