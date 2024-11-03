@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"garlip/internal/queries"
+	"log"
 	"os"
 	"regexp"
 	"time"
@@ -166,7 +167,7 @@ func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token 
 		},
 	}
 
-	token, err = jwt.NewWithClaims(jwt.SigningMethodES256, claims).
+	token, err = jwt.NewWithClaims(jwt.SigningMethodHS256, claims).
 		SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return "", fmt.Errorf("jwt: %w", err)

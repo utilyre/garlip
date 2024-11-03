@@ -58,9 +58,12 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	token, err := a.AuthSVC.Login(r.Context(), service.AuthLoginParams{
-		Username: "",
-		Password: []byte{},
+		Username: body.Username,
+		Password: []byte(body.Password),
 	})
+	if errors.Is(err, service.ErrAccountNotFound) {
+		return xmate.Errorf(http.StatusNotFound, "Account not found")
+	}
 	if err != nil {
 		return err
 	}
