@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"garlip/internal/queries"
-	"log"
 	"os"
 	"regexp"
 	"time"
@@ -107,6 +106,7 @@ type AuthLoginParams struct {
 }
 
 type JWTClaims struct {
+	ID       int32
 	Username string
 	jwt.RegisteredClaims
 }
@@ -144,7 +144,7 @@ func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token 
 		}
 	}
 
-	hash, err := a.Queries.GetAccountPasswordByUsername(ctx, params.Username)
+	authInfo, err := a.Queries.GetAccountAuthInfo(ctx, params.Username)
 	if errors.Is(err, sql.ErrNoRows) {
 		return "", ErrAccountNotFound
 	}
@@ -152,7 +152,7 @@ func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token 
 		return "", fmt.Errorf("database: %w", err)
 	}
 
-	err = bcrypt.CompareHashAndPassword(hash, params.Password)
+	err = bcrypt.CompareHashAndPassword(authInfo.Password, params.Password)
 	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 		return "", ErrAccountNotFound
 	}
@@ -161,6 +161,7 @@ func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token 
 	}
 
 	claims := &JWTClaims{
+		ID:       authInfo.ID,
 		Username: params.Username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),

@@ -3,7 +3,7 @@ INSERT INTO accounts
 (created_at, updated_at, username, password, fullname)
 VALUES (NOW(), NOW(), $1, $2, NULLIF(@fullname::VARCHAR(100), ''));
 
--- name: UpdateAccount :exec
+-- name: UpdateAccountDetails :exec
 UPDATE "accounts"
 SET
     "updated_at" = NOW(),
@@ -12,8 +12,8 @@ SET
     "bio" = COALESCE(NULLIF(@bio::TEXT, ''), "bio")
 WHERE "id" = $1;
 
--- name: GetAccountPasswordByUsername :one
-SELECT password
+-- name: GetAccountAuthInfo :one
+SELECT id, password
 FROM accounts
 WHERE username = $1
 LIMIT 1;

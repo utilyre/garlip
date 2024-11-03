@@ -32,7 +32,7 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) error {
 		Password: []byte(body.Password),
 		Fullname: body.Fullname,
 	})
-	if errors.Is(err, service.ErrAccountDup) {
+	if errors.Is(err, service.ErrUsernameTaken) {
 		return xmate.Errorf(http.StatusConflict, "Account already exists")
 	}
 	if err != nil {

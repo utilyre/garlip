@@ -47,7 +47,7 @@ func (as AccountService) UpdateByID(ctx context.Context, params AccountUpdateByI
 		}
 	}
 
-	err := as.Queries.UpdateAccount(ctx, queries.UpdateAccountParams{
+	err := as.Queries.UpdateAccountDetails(ctx, queries.UpdateAccountDetailsParams{
 		ID:       params.ID,
 		Username: params.Username,
 		Fullname: params.Fullname,
