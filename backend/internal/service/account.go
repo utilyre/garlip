@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 	"garlip/internal/queries"
 	"regexp"
+
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type AccountService struct {
@@ -44,12 +47,16 @@ func (as AccountService) UpdateByID(ctx context.Context, params AccountUpdateByI
 		}
 	}
 
-	if err := as.Queries.UpdateAccount(ctx, queries.UpdateAccountParams{
+	err := as.Queries.UpdateAccount(ctx, queries.UpdateAccountParams{
 		ID:       params.ID,
 		Username: params.Username,
 		Fullname: params.Fullname,
 		Bio:      params.Bio,
-	}); err != nil {
+	})
+	if pgErr := (&pgconn.PgError{}); errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		return ErrUsernameTaken
+	}
+	if err != nil {
 		return err
 	}
 

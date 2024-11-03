@@ -18,7 +18,7 @@ import (
 
 var (
 	ErrAccountNotFound = errors.New("account not found")
-	ErrAccountDup      = errors.New("account duplication")
+	ErrUsernameTaken   = errors.New("username already taken")
 	ErrTokenInvalid    = errors.New("token invalid")
 	ErrTokenExpired    = errors.New("token expired")
 )
@@ -92,7 +92,7 @@ func (a *AuthService) Register(ctx context.Context, params AuthRegisterParams) e
 		Fullname: params.Fullname,
 	})
 	if pgErr := (&pgconn.PgError{}); errors.As(err, &pgErr) && pgErr.Code == "23505" {
-		return ErrAccountDup
+		return ErrUsernameTaken
 	}
 	if err != nil {
 		return fmt.Errorf("database: %w", err)
