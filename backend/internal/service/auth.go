@@ -11,13 +11,15 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var (
 	ErrAccountNotFound = errors.New("account not found")
-	ErrInvalidToken    = errors.New("invalid token")
-	ErrExpiredToken    = errors.New("expired token")
+	ErrAccountDup      = errors.New("account duplication")
+	ErrTokenInvalid    = errors.New("token invalid")
+	ErrTokenExpired    = errors.New("token expired")
 )
 
 type ValidationError struct {
@@ -83,12 +85,15 @@ func (a *AuthService) Register(ctx context.Context, params AuthRegisterParams) e
 		return fmt.Errorf("bcrypt: %w", err)
 	}
 
-	if err := a.Queries.CreateAccount(ctx, queries.CreateAccountParams{
+	err = a.Queries.CreateAccount(ctx, queries.CreateAccountParams{
 		Username: params.Username,
 		Password: hash,
 		Fullname: params.Fullname,
-	}); err != nil {
-		// TODO: handle dup case
+	})
+	if pgErr := (&pgconn.PgError{}); errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		return ErrAccountDup
+	}
+	if err != nil {
 		return fmt.Errorf("database: %w", err)
 	}
 
@@ -174,7 +179,7 @@ func (a *AuthService) VerifyToken(ctx context.Context, token string) (username s
 	t, err := jwt.Parse(token, func(t *jwt.Token) (any, error) {
 		if method, ok := t.Method.(*jwt.SigningMethodECDSA); !ok ||
 			method != jwt.SigningMethodES256 {
-			return nil, ErrInvalidToken
+			return nil, ErrTokenInvalid
 		}
 
 		return []byte(os.Getenv("JWT_SECRET")), nil
@@ -185,10 +190,10 @@ func (a *AuthService) VerifyToken(ctx context.Context, token string) (username s
 
 	claims, ok := t.Claims.(*JWTClaims)
 	if !ok {
-		return "", ErrInvalidToken
+		return "", ErrTokenInvalid
 	}
 	if time.Now().After(claims.ExpiresAt.Time) {
-		return "", ErrExpiredToken
+		return "", ErrTokenExpired
 	}
 
 	return claims.Username, nil

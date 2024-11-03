@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"garlip/internal/service"
 	"net/http"
 
@@ -26,11 +27,15 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) error {
 		return xmate.Errorf(http.StatusBadRequest, "Decoding JSON failed due to %v", err)
 	}
 
-	if err := a.AuthSVC.Register(r.Context(), service.AuthRegisterParams{
+	err := a.AuthSVC.Register(r.Context(), service.AuthRegisterParams{
 		Username: body.Username,
 		Password: []byte(body.Password),
 		Fullname: body.Fullname,
-	}); err != nil {
+	})
+	if errors.Is(err, service.ErrAccountDup) {
+		return xmate.Errorf(http.StatusConflict, "Account already exists")
+	}
+	if err != nil {
 		return err
 	}
 
