@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"garlip/internal/queries"
 	"regexp"
 )
@@ -22,33 +21,26 @@ func (as AccountService) UpdateByID(ctx context.Context, params AccountUpdateByI
 	if len(params.Username) < 3 {
 		return ValidationError{
 			Param: "username",
-			Err:   errors.New("shorter than 3 chars"),
+			Msg:   "shorter than 3 chars",
 		}
 	}
 	if len(params.Username) > 50 {
 		return ValidationError{
 			Param: "username",
-			Err:   errors.New("longer than 50 chars"),
+			Msg:   "longer than 50 chars",
 		}
 	}
 	re := regexp.MustCompile("[0-9A-Za-z_]*")
 	if !re.MatchString(params.Username) {
 		return ValidationError{
 			Param: "username",
-			Err:   errors.New("contains chars other than alphanumeric and underscore"),
-		}
-	}
-
-	if len(params.Fullname) == 0 {
-		return ValidationError{
-			Param: "fullname",
-			Err:   errors.New("required"),
+			Msg:   "contains chars other than alphanumeric and underscore",
 		}
 	}
 	if len(params.Fullname) > 100 {
 		return ValidationError{
 			Param: "fullname",
-			Err:   errors.New("longer than 100 chars"),
+			Msg:   "longer than 100 chars",
 		}
 	}
 

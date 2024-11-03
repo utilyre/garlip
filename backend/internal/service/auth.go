@@ -22,15 +22,11 @@ var (
 
 type ValidationError struct {
 	Param string
-	Err   error
+	Msg   string
 }
 
 func (e ValidationError) Error() string {
-	return fmt.Sprintf("param %s: %v", e.Param, e.Err)
-}
-
-func (e ValidationError) Unwrap() error {
-	return e.Err
+	return fmt.Sprintf("param %s: %s", e.Param, e.Msg)
 }
 
 type AuthService struct {
@@ -47,27 +43,38 @@ func (a *AuthService) Register(ctx context.Context, params AuthRegisterParams) e
 	if len(params.Username) < 3 {
 		return ValidationError{
 			Param: "username",
-			Err:   errors.New("shorter than 3 chars"),
+			Msg:   "shorter than 3 chars",
 		}
 	}
 	if len(params.Username) > 50 {
 		return ValidationError{
 			Param: "username",
-			Err:   errors.New("longer than 50 chars"),
+			Msg:   "longer than 50 chars",
 		}
 	}
 	re := regexp.MustCompile("[0-9A-Za-z_]*")
 	if !re.MatchString(params.Username) {
 		return ValidationError{
 			Param: "username",
-			Err:   errors.New("contains chars other than alphanumeric and underscore"),
+			Msg:   "contains chars other than alphanumeric and underscore",
 		}
 	}
-
 	if len(params.Password) < 8 {
 		return ValidationError{
 			Param: "password",
-			Err:   errors.New("shorter than 8 chars"),
+			Msg:   "shorter than 8 chars",
+		}
+	}
+	if len(params.Password) > 1024 {
+		return ValidationError{
+			Param: "password",
+			Msg:   "longer than 1024 chars",
+		}
+	}
+	if len(params.Fullname) > 100 {
+		return ValidationError{
+			Param: "fullname",
+			Msg:   "longer than 100 chars",
 		}
 	}
 
@@ -79,8 +86,9 @@ func (a *AuthService) Register(ctx context.Context, params AuthRegisterParams) e
 	if err := a.Queries.CreateAccount(ctx, queries.CreateAccountParams{
 		Username: params.Username,
 		Password: hash,
-		Fullname: sql.NullString{String: params.Fullname, Valid: true},
+		Fullname: params.Fullname,
 	}); err != nil {
+		// TODO: handle dup case
 		return fmt.Errorf("database: %w", err)
 	}
 
@@ -101,27 +109,32 @@ func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token 
 	if len(params.Username) < 3 {
 		return "", ValidationError{
 			Param: "username",
-			Err:   errors.New("shorter than 3 chars"),
+			Msg:   "shorter than 3 chars",
 		}
 	}
 	if len(params.Username) > 50 {
 		return "", ValidationError{
 			Param: "username",
-			Err:   errors.New("longer than 50 chars"),
+			Msg:   "longer than 50 chars",
 		}
 	}
 	re := regexp.MustCompile("[0-9A-Za-z_]*")
 	if !re.MatchString(params.Username) {
 		return "", ValidationError{
 			Param: "username",
-			Err:   errors.New("contains chars other than alphanumeric and underscore"),
+			Msg:   "contains chars other than alphanumeric and underscore",
 		}
 	}
-
 	if len(params.Password) < 8 {
 		return "", ValidationError{
 			Param: "password",
-			Err:   errors.New("shorter than 8 chars"),
+			Msg:   "shorter than 8 chars",
+		}
+	}
+	if len(params.Password) > 1024 {
+		return "", ValidationError{
+			Param: "password",
+			Msg:   "longer than 1024 chars",
 		}
 	}
 
@@ -158,7 +171,7 @@ func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token 
 }
 
 func (a *AuthService) VerifyToken(ctx context.Context, token string) (username string, err error) {
-	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+	t, err := jwt.Parse(token, func(t *jwt.Token) (any, error) {
 		if method, ok := t.Method.(*jwt.SigningMethodECDSA); !ok ||
 			method != jwt.SigningMethodES256 {
 			return nil, ErrInvalidToken
@@ -167,15 +180,15 @@ func (a *AuthService) VerifyToken(ctx context.Context, token string) (username s
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {
-		return "", fmt.Errorf("jwt: %w", err)
+		return "", err
 	}
 
 	claims, ok := t.Claims.(*JWTClaims)
 	if !ok {
-		return "", fmt.Errorf("jwt: %w", ErrInvalidToken)
+		return "", ErrInvalidToken
 	}
 	if time.Now().After(claims.ExpiresAt.Time) {
-		return "", fmt.Errorf("jwt: %w", ErrExpiredToken)
+		return "", ErrExpiredToken
 	}
 
 	return claims.Username, nil

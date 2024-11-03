@@ -1,11 +1,12 @@
 -- name: CreateAccount :exec
 INSERT INTO accounts
 (created_at, updated_at, username, password, fullname)
-VALUES (NOW(), NOW(), $1, $2, $3);
+VALUES (NOW(), NOW(), $1, $2, NULLIF(@fullname::VARCHAR(100), ''));
 
 -- name: UpdateAccount :exec
 UPDATE "accounts"
 SET
+    "updated_at" = NOW(),
     "username" = COALESCE(NULLIF(@username::VARCHAR(50), ''), "username"),
     "fullname" = COALESCE(NULLIF(@fullname::VARCHAR(100), ''), "fullname"),
     "bio" = COALESCE(NULLIF(@bio::TEXT, ''), "bio")

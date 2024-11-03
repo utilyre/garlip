@@ -3,56 +3,53 @@ package handler
 import (
 	"encoding/json"
 	"garlip/internal/service"
-	"log"
 	"net/http"
+
+	"github.com/utilyre/xmate/v2"
 )
 
 type AuthHandler struct {
 	AuthSVC *service.AuthService
 }
 
-func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
-	type Request struct {
+func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) error {
+	if r.Header.Get("Content-Type") != "application/json" {
+		return xmate.Errorf(http.StatusBadRequest, "Unsupported content type")
+	}
+
+	var body struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 		Fullname string `json:"fullname"`
 	}
-
-	var req Request
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-		return
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		return xmate.Errorf(http.StatusBadRequest, "Decoding JSON failed due to %v", err)
 	}
 
 	if err := a.AuthSVC.Register(r.Context(), service.AuthRegisterParams{
-		Username: req.Username,
-		Password: []byte(req.Password),
-		Fullname: req.Fullname,
+		Username: body.Username,
+		Password: []byte(body.Password),
+		Fullname: body.Fullname,
 	}); err != nil {
-		log.Println(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+		return err
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(map[string]any{
-		"message": "account successfully registered",
-	}); err != nil {
-		log.Println(err)
-	}
+	return xmate.WriteJSON(w, http.StatusCreated, map[string]any{
+		"message": "Account has been registered",
+	})
 }
 
-func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	type Request struct {
+func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) error {
+	if r.Header.Get("Content-Type") != "application/json" {
+		return xmate.Errorf(http.StatusBadRequest, "Unsupported content type")
+	}
+
+	var body struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
-
-	var req Request
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-		return
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		return xmate.Errorf(http.StatusBadRequest, "Decoding JSON failed due to %v", err)
 	}
 
 	token, err := a.AuthSVC.Login(r.Context(), service.AuthLoginParams{
@@ -60,16 +57,10 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Password: []byte{},
 	})
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+		return err
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(map[string]any{
+	return xmate.WriteJSON(w, http.StatusOK, map[string]any{
 		"token": token,
-	}); err != nil {
-		log.Println(err)
-	}
+	})
 }
