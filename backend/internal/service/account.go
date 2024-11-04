@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"garlip/internal/queries"
-	"regexp"
 
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -26,15 +25,12 @@ func (as AccountService) UpdateByID(ctx context.Context, params AccountUpdateByI
 			Field:   "username",
 			Message: "shorter than 3 chars",
 		}
-	}
-	if len(params.Username) > 50 {
+	} else if len(params.Username) > 50 {
 		return ValidationError{
 			Field:   "username",
 			Message: "longer than 50 chars",
 		}
-	}
-	re := regexp.MustCompile("[0-9A-Za-z_]*")
-	if !re.MatchString(params.Username) {
+	} else if !reUsername.MatchString(params.Username) {
 		return ValidationError{
 			Field:   "username",
 			Message: "contains chars other than alphanumeric and underscore",

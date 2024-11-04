@@ -41,27 +41,25 @@ type AuthRegisterParams struct {
 	Fullname string
 }
 
+var reUsername = regexp.MustCompile("[0-9A-Za-z_]*")
+
 func (a *AuthService) Register(ctx context.Context, params AuthRegisterParams) error {
 	if len(params.Username) == 0 {
 		return ValidationError{
 			Field:   "username",
 			Message: "required",
 		}
-	}
-	if len(params.Username) < 3 {
+	} else if len(params.Username) < 3 {
 		return ValidationError{
 			Field:   "username",
 			Message: "shorter than 3 chars",
 		}
-	}
-	if len(params.Username) > 50 {
+	} else if len(params.Username) > 50 {
 		return ValidationError{
 			Field:   "username",
 			Message: "longer than 50 chars",
 		}
-	}
-	re := regexp.MustCompile("[0-9A-Za-z_]*")
-	if !re.MatchString(params.Username) {
+	} else if !reUsername.MatchString(params.Username) {
 		return ValidationError{
 			Field:   "username",
 			Message: "contains chars other than alphanumeric and underscore",
@@ -72,14 +70,12 @@ func (a *AuthService) Register(ctx context.Context, params AuthRegisterParams) e
 			Field:   "password",
 			Message: "required",
 		}
-	}
-	if len(params.Password) < 8 {
+	} else if len(params.Password) < 8 {
 		return ValidationError{
 			Field:   "password",
 			Message: "shorter than 8 chars",
 		}
-	}
-	if len(params.Password) > 1024 {
+	} else if len(params.Password) > 1024 {
 		return ValidationError{
 			Field:   "password",
 			Message: "longer than 1024 chars",
@@ -129,33 +125,33 @@ func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token 
 			Field:   "username",
 			Message: "required",
 		}
-	}
-	if len(params.Username) < 3 {
+	} else if len(params.Username) < 3 {
 		return "", ValidationError{
 			Field:   "username",
 			Message: "shorter than 3 chars",
 		}
-	}
-	if len(params.Username) > 50 {
+	} else if len(params.Username) > 50 {
 		return "", ValidationError{
 			Field:   "username",
 			Message: "longer than 50 chars",
 		}
-	}
-	re := regexp.MustCompile("[0-9A-Za-z_]*")
-	if !re.MatchString(params.Username) {
+	} else if !reUsername.MatchString(params.Username) {
 		return "", ValidationError{
 			Field:   "username",
 			Message: "contains chars other than alphanumeric and underscore",
 		}
 	}
-	if len(params.Password) < 8 {
+	if len(params.Password) == 0 {
+		return "", ValidationError{
+			Field:   "password",
+			Message: "required",
+		}
+	} else if len(params.Password) < 8 {
 		return "", ValidationError{
 			Field:   "password",
 			Message: "shorter than 8 chars",
 		}
-	}
-	if len(params.Password) > 1024 {
+	} else if len(params.Password) > 1024 {
 		return "", ValidationError{
 			Field:   "password",
 			Message: "longer than 1024 chars",
