@@ -70,8 +70,8 @@ func handleError(w http.ResponseWriter, r *http.Request) {
 	}
 	if validationErr := (service.ValidationError{}); errors.As(err, &validationErr) {
 		_ = xmate.WriteJSON(w, http.StatusUnprocessableEntity, map[string]any{
-			"field":   validationErr.Param,
-			"message": validationErr.Msg,
+			"field":   validationErr.Field,
+			"message": validationErr.Message,
 		})
 		return
 	}

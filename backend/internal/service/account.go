@@ -23,27 +23,27 @@ type AccountUpdateByIDParams struct {
 func (as AccountService) UpdateByID(ctx context.Context, params AccountUpdateByIDParams) error {
 	if len(params.Username) < 3 {
 		return ValidationError{
-			Param: "username",
-			Msg:   "shorter than 3 chars",
+			Field:   "username",
+			Message: "shorter than 3 chars",
 		}
 	}
 	if len(params.Username) > 50 {
 		return ValidationError{
-			Param: "username",
-			Msg:   "longer than 50 chars",
+			Field:   "username",
+			Message: "longer than 50 chars",
 		}
 	}
 	re := regexp.MustCompile("[0-9A-Za-z_]*")
 	if !re.MatchString(params.Username) {
 		return ValidationError{
-			Param: "username",
-			Msg:   "contains chars other than alphanumeric and underscore",
+			Field:   "username",
+			Message: "contains chars other than alphanumeric and underscore",
 		}
 	}
 	if len(params.Fullname) > 100 {
 		return ValidationError{
-			Param: "fullname",
-			Msg:   "longer than 100 chars",
+			Field:   "fullname",
+			Message: "longer than 100 chars",
 		}
 	}
 

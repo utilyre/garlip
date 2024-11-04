@@ -23,12 +23,12 @@ var (
 )
 
 type ValidationError struct {
-	Param string
-	Msg   string
+	Field   string
+	Message string
 }
 
 func (e ValidationError) Error() string {
-	return fmt.Sprintf("param %s: %s", e.Param, e.Msg)
+	return fmt.Sprintf("field %s: %s", e.Field, e.Message)
 }
 
 type AuthService struct {
@@ -42,41 +42,53 @@ type AuthRegisterParams struct {
 }
 
 func (a *AuthService) Register(ctx context.Context, params AuthRegisterParams) error {
+	if len(params.Username) == 0 {
+		return ValidationError{
+			Field:   "username",
+			Message: "required",
+		}
+	}
 	if len(params.Username) < 3 {
 		return ValidationError{
-			Param: "username",
-			Msg:   "shorter than 3 chars",
+			Field:   "username",
+			Message: "shorter than 3 chars",
 		}
 	}
 	if len(params.Username) > 50 {
 		return ValidationError{
-			Param: "username",
-			Msg:   "longer than 50 chars",
+			Field:   "username",
+			Message: "longer than 50 chars",
 		}
 	}
 	re := regexp.MustCompile("[0-9A-Za-z_]*")
 	if !re.MatchString(params.Username) {
 		return ValidationError{
-			Param: "username",
-			Msg:   "contains chars other than alphanumeric and underscore",
+			Field:   "username",
+			Message: "contains chars other than alphanumeric and underscore",
+		}
+	}
+	if len(params.Password) == 0 {
+		return ValidationError{
+			Field:   "password",
+			Message: "required",
 		}
 	}
 	if len(params.Password) < 8 {
 		return ValidationError{
-			Param: "password",
-			Msg:   "shorter than 8 chars",
+			Field:   "password",
+			Message: "shorter than 8 chars",
 		}
 	}
 	if len(params.Password) > 1024 {
 		return ValidationError{
-			Param: "password",
-			Msg:   "longer than 1024 chars",
+			Field:   "password",
+			Message: "longer than 1024 chars",
 		}
 	}
 	if len(params.Fullname) > 100 {
 		return ValidationError{
-			Param: "fullname",
-			Msg:   "longer than 100 chars",
+			Field:   "fullname",
+			Message: "longer than 100 chars",
 		}
 	}
 
@@ -112,35 +124,41 @@ type JWTClaims struct {
 }
 
 func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token string, err error) {
+	if len(params.Username) == 0 {
+		return "", ValidationError{
+			Field:   "username",
+			Message: "required",
+		}
+	}
 	if len(params.Username) < 3 {
 		return "", ValidationError{
-			Param: "username",
-			Msg:   "shorter than 3 chars",
+			Field:   "username",
+			Message: "shorter than 3 chars",
 		}
 	}
 	if len(params.Username) > 50 {
 		return "", ValidationError{
-			Param: "username",
-			Msg:   "longer than 50 chars",
+			Field:   "username",
+			Message: "longer than 50 chars",
 		}
 	}
 	re := regexp.MustCompile("[0-9A-Za-z_]*")
 	if !re.MatchString(params.Username) {
 		return "", ValidationError{
-			Param: "username",
-			Msg:   "contains chars other than alphanumeric and underscore",
+			Field:   "username",
+			Message: "contains chars other than alphanumeric and underscore",
 		}
 	}
 	if len(params.Password) < 8 {
 		return "", ValidationError{
-			Param: "password",
-			Msg:   "shorter than 8 chars",
+			Field:   "password",
+			Message: "shorter than 8 chars",
 		}
 	}
 	if len(params.Password) > 1024 {
 		return "", ValidationError{
-			Param: "password",
-			Msg:   "longer than 1024 chars",
+			Field:   "password",
+			Message: "longer than 1024 chars",
 		}
 	}
 
