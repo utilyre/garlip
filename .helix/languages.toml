@@ -11,6 +11,12 @@ formatter = { command = "prettier", args = ["--parser=css"] }
 language-servers = ["vscode-css-language-server", "tailwindcss-ls"]
 
 [[language]]
+name = "json"
+auto-format = true
+formatter = { command = "prettier", args = ["--parser=json"] }
+language-servers = ["vscode-json-language-server", "tailwindcss-ls"]
+
+[[language]]
 name = "jsx"
 auto-format = true
 formatter = { command = "prettier", args = ["--parser=javascript"] }
