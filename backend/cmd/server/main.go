@@ -15,7 +15,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5"
-	"github.com/utilyre/xmate/v2"
+	"github.com/utilyre/xmate/v3"
 )
 
 var port string
@@ -38,7 +38,7 @@ func main() {
 
 	mux := chi.NewMux()
 	apiV1 := chi.NewRouter()
-	eh := xmate.ErrorHandler(handleError)
+	xmate.SetDefault(handleError)
 
 	mux.Use(middleware.Logger)
 	mux.Use(middleware.Recoverer)
@@ -50,14 +50,14 @@ func main() {
 		AllowCredentials: false,
 		MaxAge:           300,
 	}))
-	mux.Get("/helloworld", eh.HandleFunc(handleHelloWorld))
+	mux.Get("/helloworld", xmate.HandleFunc(handleHelloWorld))
 	mux.Mount("/api/v1", apiV1)
 
 	apiV1.Route("/auth", func(r chi.Router) {
 		authAPI := &handler.AuthHandler{AuthSVC: authSvc}
 
-		r.Post("/register", eh.HandleFunc(authAPI.Register))
-		r.Post("/login", eh.HandleFunc(authAPI.Login))
+		r.Post("/register", xmate.HandleFunc(authAPI.Register))
+		r.Post("/login", xmate.HandleFunc(authAPI.Login))
 	})
 
 	log.Printf("Listening on http://localhost:%s\n", port)
@@ -68,12 +68,10 @@ func handleHelloWorld(w http.ResponseWriter, r *http.Request) error {
 	return xmate.WriteText(w, http.StatusOK, "Hello world!")
 }
 
-func handleError(w http.ResponseWriter, r *http.Request) {
-	err := r.Context().Value(xmate.KeyError).(error)
-
-	if httpErr := (xmate.HTTPError{}); errors.As(err, &httpErr) {
-		_ = xmate.WriteJSON(w, httpErr.Code, map[string]any{
-			"message": httpErr.Message,
+func handleError(w http.ResponseWriter, r *http.Request, err error) {
+	if handlerErr := (handler.Error{}); errors.As(err, &handlerErr) {
+		_ = xmate.WriteJSON(w, handlerErr.Status, map[string]any{
+			"message": handlerErr.Message,
 		})
 		return
 	}

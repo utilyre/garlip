@@ -3,11 +3,28 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"garlip/internal/service"
 	"net/http"
 
-	"github.com/utilyre/xmate/v2"
+	"github.com/utilyre/xmate/v3"
 )
+
+type Error struct {
+	Status  int
+	Message string
+}
+
+func Errorf(status int, format string, a ...any) Error {
+	return Error{
+		Status:  status,
+		Message: fmt.Sprintf(format, a...),
+	}
+}
+
+func (he Error) Error() string {
+	return he.Message
+}
 
 type AuthHandler struct {
 	AuthSVC *service.AuthService
@@ -15,7 +32,7 @@ type AuthHandler struct {
 
 func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) error {
 	if r.Header.Get("Content-Type") != "application/json" {
-		return xmate.Errorf(http.StatusBadRequest, "Unsupported content type")
+		return Errorf(http.StatusBadRequest, "Unsupported content type")
 	}
 
 	var body struct {
@@ -24,7 +41,7 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) error {
 		Fullname string `json:"fullname"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		return xmate.Errorf(http.StatusBadRequest, "Decoding JSON failed due to %v", err)
+		return Errorf(http.StatusBadRequest, "Decoding JSON failed due to %v", err)
 	}
 
 	err := a.AuthSVC.Register(r.Context(), service.AuthRegisterParams{
@@ -33,7 +50,7 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) error {
 		Fullname: body.Fullname,
 	})
 	if errors.Is(err, service.ErrUsernameTaken) {
-		return xmate.Errorf(http.StatusConflict, "Account already exists")
+		return Errorf(http.StatusConflict, "Account already exists")
 	}
 	if err != nil {
 		return err
@@ -46,7 +63,7 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) error {
 
 func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) error {
 	if r.Header.Get("Content-Type") != "application/json" {
-		return xmate.Errorf(http.StatusBadRequest, "Unsupported content type")
+		return Errorf(http.StatusBadRequest, "Unsupported content type")
 	}
 
 	var body struct {
@@ -54,7 +71,7 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) error {
 		Password string `json:"password"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		return xmate.Errorf(http.StatusBadRequest, "Decoding JSON failed due to %v", err)
+		return Errorf(http.StatusBadRequest, "Decoding JSON failed due to %v", err)
 	}
 
 	token, err := a.AuthSVC.Login(r.Context(), service.AuthLoginParams{
@@ -62,7 +79,7 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) error {
 		Password: []byte(body.Password),
 	})
 	if errors.Is(err, service.ErrAccountNotFound) {
-		return xmate.Errorf(http.StatusNotFound, "Account not found")
+		return Errorf(http.StatusNotFound, "Account not found")
 	}
 	if err != nil {
 		return err
