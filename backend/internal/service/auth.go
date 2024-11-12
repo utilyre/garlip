@@ -206,15 +206,14 @@ func (a *AuthService) VerifyToken(ctx context.Context, token string) (*Claims, e
 
 		return config.Default().TokenSecret, nil
 	})
+	if errors.Is(err, jwt.ErrTokenExpired) {
+		return nil, ErrTokenExpired
+	}
 	if err != nil {
 		return nil, err
 	}
 	if !t.Valid {
 		return nil, ErrTokenInvalid
-	}
-
-	if time.Now().After(claims.ExpiresAt.Time) {
-		return nil, ErrTokenExpired
 	}
 
 	return &Claims{
