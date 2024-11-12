@@ -13,7 +13,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5"
 	"github.com/utilyre/xmate/v3"
 )
@@ -42,22 +41,14 @@ func main() {
 
 	mux.Use(middleware.Logger)
 	mux.Use(middleware.Recoverer)
-	mux.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
-		MaxAge:           300,
-	}))
 	mux.Get("/helloworld", xmate.HandleFunc(handleHelloWorld))
 	mux.Mount("/api/v1", apiV1)
 
 	apiV1.Route("/auth", func(r chi.Router) {
-		authAPI := &handler.AuthHandler{AuthSVC: authSvc}
+		authHandler := &handler.AuthHandler{AuthSVC: authSvc}
 
-		r.Post("/register", xmate.HandleFunc(authAPI.Register))
-		r.Post("/login", xmate.HandleFunc(authAPI.Login))
+		r.Post("/register", xmate.HandleFunc(authHandler.Register))
+		r.Post("/login", xmate.HandleFunc(authHandler.Login))
 	})
 
 	log.Printf("Listening on http://localhost:%s\n", port)
