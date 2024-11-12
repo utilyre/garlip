@@ -18,7 +18,11 @@ export default function Login() {
     });
 
     const data = await response.json();
-    console.log(data);
+    console.debug(data);
+
+    if (response.ok) {
+      console.log("Logged in");
+    }
   }
 
   return (

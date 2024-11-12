@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"garlip/internal/service"
 	"net/http"
+	"time"
 
 	"github.com/utilyre/xmate/v3"
 )
@@ -85,7 +86,17 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    token,
+		Path:     "/",
+		Expires:  time.Now().Add(time.Hour),
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
+
 	return xmate.WriteJSON(w, http.StatusOK, map[string]any{
-		"token": token,
+		"message": "You have been logged in",
 	})
 }
