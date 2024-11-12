@@ -93,7 +93,7 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) error {
 		Name:     "jwt",
 		Value:    token,
 		Path:     "/",
-		Expires:  time.Now().Add(time.Hour),
+		Expires:  time.Now().Add(config.Default().TokenLifespan),
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,

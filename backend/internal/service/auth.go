@@ -178,7 +178,7 @@ func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token 
 		ID:       authInfo.ID,
 		Username: params.Username,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(config.Default().TokenLifespan)),
 		},
 	}
 

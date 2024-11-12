@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 var defaultConfig Config
@@ -14,8 +15,9 @@ var (
 )
 
 type Config struct {
-	DatabaseURL string
-	TokenSecret []byte
+	DatabaseURL   string
+	TokenSecret   []byte
+	TokenLifespan time.Duration
 }
 
 func init() {
@@ -31,6 +33,15 @@ func init() {
 		log.Fatal("config:", err)
 	}
 	defaultConfig.TokenSecret = []byte(tokenSecret)
+
+	tokenLifespan, err := lookupEnv("JWT_LIFESPAN")
+	if err != nil {
+		log.Fatal("config:", err)
+	}
+	defaultConfig.TokenLifespan, err = time.ParseDuration(tokenLifespan)
+	if err != nil {
+		log.Fatal("config:", err)
+	}
 }
 
 func Default() *Config {
