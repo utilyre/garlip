@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"garlip/internal/config"
 	"garlip/internal/service"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -123,7 +123,7 @@ func (ah *AuthHandler) Authenticate(next http.Handler) http.Handler {
 				return nil, errors.New("unexpected signing method")
 			}
 
-			return []byte(os.Getenv("JWT_SECRET")), nil
+			return config.Default().TokenSecret, nil
 		})
 		if err != nil {
 			return err

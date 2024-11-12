@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"garlip/internal/config"
 	"garlip/internal/handler"
 	"garlip/internal/queries"
 	"garlip/internal/service"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -25,8 +25,8 @@ func init() {
 }
 
 func main() {
-	log.Println("Connecting to", os.Getenv("DB_URL"))
-	db, err := pgx.Connect(context.Background(), os.Getenv("DB_URL"))
+	log.Println("Connecting to", config.Default().DatabaseURL)
+	db, err := pgx.Connect(context.Background(), config.Default().DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}

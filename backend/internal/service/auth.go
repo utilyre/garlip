@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"garlip/internal/config"
 	"garlip/internal/queries"
-	"os"
 	"regexp"
 	"time"
 
@@ -183,7 +183,7 @@ func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token 
 	}
 
 	token, err = jwt.NewWithClaims(jwt.SigningMethodHS256, claims).
-		SignedString([]byte(os.Getenv("JWT_SECRET")))
+		SignedString(config.Default().TokenSecret)
 	if err != nil {
 		return "", fmt.Errorf("jwt: %w", err)
 	}
@@ -198,7 +198,7 @@ func (a *AuthService) VerifyToken(ctx context.Context, token string) (username s
 			return nil, ErrTokenInvalid
 		}
 
-		return []byte(os.Getenv("JWT_SECRET")), nil
+		return config.Default().TokenSecret, nil
 	})
 	if err != nil {
 		return "", err
