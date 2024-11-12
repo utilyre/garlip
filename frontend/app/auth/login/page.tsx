@@ -5,9 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormEvent, useState } from "react";
 
+function capitalizeFirstLetter(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [formError, setFormError] = useState("");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -21,19 +29,25 @@ export default function Login() {
         body: JSON.stringify({ username, password }),
       });
 
-      if (response.status == 422) {
+      if (response.status === 422) {
         const error = await response.json();
         switch (error.field) {
           case "username":
-            console.log("username error:", error.message);
+            setUsernameError(capitalizeFirstLetter(error.message));
+            setPasswordError("");
+            setFormError("");
             break;
           case "password":
-            console.log("password error:", error.message);
+            setPasswordError(capitalizeFirstLetter(error.message));
+            setUsernameError("");
+            setFormError("");
             break;
         }
-      }
-
-      if (!response.ok) {
+      } else if (response.status === 404) {
+        setFormError("Username or password incorrect");
+        setUsernameError("");
+        setPasswordError("");
+      } else if (!response.ok) {
         throw new Error(`http failure with status ${response.status}`);
       }
     } catch (error) {
@@ -59,6 +73,9 @@ export default function Login() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
+              {usernameError && (
+                <p className="text-sm text-destructive">{usernameError}</p>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -70,12 +87,22 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              {passwordError && (
+                <p className="text-sm text-destructive">{passwordError}</p>
+              )}
             </div>
           </div>
 
-          <Button type="submit" className="w-full">
-            Login
-          </Button>
+          <div className="space-y-1">
+            {formError && (
+              <p className="text-center text-sm text-destructive">
+                {formError}
+              </p>
+            )}
+            <Button type="submit" className="w-full">
+              Login
+            </Button>
+          </div>
         </form>
       </div>
     </main>
