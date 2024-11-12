@@ -9,19 +9,32 @@ export default function Login() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const response = await fetch("/api/v1/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const response = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    const data = await response.json();
-    console.debug(data);
+      if (response.status == 422) {
+        const error = await response.json();
+        switch (error.field) {
+          case "username":
+            console.log("username error:", error.message);
+            break;
+          case "password":
+            console.log("password error:", error.message);
+            break;
+        }
+      }
 
-    if (response.ok) {
-      console.log("Logged in");
+      if (!response.ok) {
+        throw new Error(`http failure with status ${response.status}`);
+      }
+    } catch (error) {
+      console.error("fetch failed due to", error);
     }
   }
 
