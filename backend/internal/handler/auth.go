@@ -1,13 +1,16 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"garlip/internal/service"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/utilyre/xmate/v3"
 )
 
@@ -98,5 +101,43 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) error {
 
 	return xmate.WriteJSON(w, http.StatusOK, map[string]any{
 		"message": "You have been logged in",
+	})
+}
+
+type Auth struct {
+	ID       int32
+	Username string
+}
+
+func (ah *AuthHandler) Authenticate(next http.Handler) http.Handler {
+	return xmate.HandleFunc(func(w http.ResponseWriter, r *http.Request) error {
+		cookie, err := r.Cookie("jwt")
+		if err != nil {
+			return err
+		}
+
+		var claims service.JWTClaims
+		token, err := jwt.ParseWithClaims(cookie.Value, &claims, func(t *jwt.Token) (any, error) {
+			method, ok := t.Method.(*jwt.SigningMethodHMAC)
+			if !ok || method != jwt.SigningMethodHS256 {
+				return nil, errors.New("unexpected signing method")
+			}
+
+			return []byte(os.Getenv("JWT_SECRET")), nil
+		})
+		if err != nil {
+			return err
+		}
+		if !token.Valid {
+			return errors.New("invalid token")
+		}
+
+		r2 := r.WithContext(context.WithValue(r.Context(), "auth", Auth{
+			ID:       claims.ID,
+			Username: claims.Username,
+		}))
+
+		next.ServeHTTP(w, r2)
+		return nil
 	})
 }
