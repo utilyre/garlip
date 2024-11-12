@@ -114,8 +114,8 @@ type AuthLoginParams struct {
 }
 
 type JWTClaims struct {
-	ID       int32
-	Username string
+	ID       int32  `json:"id"`
+	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
@@ -191,26 +191,34 @@ func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token 
 	return token, nil
 }
 
-func (a *AuthService) VerifyToken(ctx context.Context, token string) (username string, err error) {
-	t, err := jwt.Parse(token, func(t *jwt.Token) (any, error) {
-		if method, ok := t.Method.(*jwt.SigningMethodECDSA); !ok ||
-			method != jwt.SigningMethodES256 {
+type Claims struct {
+	ID       int32
+	Username string
+}
+
+func (a *AuthService) VerifyToken(ctx context.Context, token string) (*Claims, error) {
+	var claims JWTClaims
+	t, err := jwt.ParseWithClaims(token, &claims, func(t *jwt.Token) (any, error) {
+		if method, ok := t.Method.(*jwt.SigningMethodHMAC); !ok ||
+			method != jwt.SigningMethodHS256 {
 			return nil, ErrTokenInvalid
 		}
 
 		return config.Default().TokenSecret, nil
 	})
 	if err != nil {
-		return "", err
+		return nil, err
+	}
+	if !t.Valid {
+		return nil, ErrTokenInvalid
 	}
 
-	claims, ok := t.Claims.(*JWTClaims)
-	if !ok {
-		return "", ErrTokenInvalid
-	}
 	if time.Now().After(claims.ExpiresAt.Time) {
-		return "", ErrTokenExpired
+		return nil, ErrTokenExpired
 	}
 
-	return claims.Username, nil
+	return &Claims{
+		ID:       claims.ID,
+		Username: claims.Username,
+	}, nil
 }

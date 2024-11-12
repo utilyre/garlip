@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/utilyre/xmate/v3"
 )
 
@@ -90,7 +89,7 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "jwt",
+		Name:     cookieJWT,
 		Value:    token,
 		Path:     "/",
 		Expires:  time.Now().Add(config.Default().TokenLifespan),
@@ -104,39 +103,36 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) error {
 	})
 }
 
-type Auth struct {
-	ID       int32
-	Username string
-}
+const cookieJWT = "jwt"
+
+type Key int
+
+const (
+	KeyClaims = iota + 1
+)
 
 func (ah *AuthHandler) Authenticate(next http.Handler) http.Handler {
 	return xmate.HandleFunc(func(w http.ResponseWriter, r *http.Request) error {
-		cookie, err := r.Cookie("jwt")
+		cookie, err := r.Cookie(cookieJWT)
+		if errors.Is(err, http.ErrNoCookie) {
+			return Errorf(http.StatusUnauthorized, "Cookie not provided")
+		}
 		if err != nil {
 			return err
 		}
 
-		var claims service.JWTClaims
-		token, err := jwt.ParseWithClaims(cookie.Value, &claims, func(t *jwt.Token) (any, error) {
-			method, ok := t.Method.(*jwt.SigningMethodHMAC)
-			if !ok || method != jwt.SigningMethodHS256 {
-				return nil, errors.New("unexpected signing method")
-			}
-
-			return config.Default().TokenSecret, nil
-		})
+		claims, err := ah.AuthSVC.VerifyToken(r.Context(), cookie.Value)
+		if errors.Is(err, service.ErrTokenInvalid) {
+			return Errorf(http.StatusUnauthorized, "Invalid token")
+		}
+		if errors.Is(err, service.ErrTokenExpired) {
+			return Errorf(http.StatusUnauthorized, "Expired token")
+		}
 		if err != nil {
 			return err
 		}
-		if !token.Valid {
-			return errors.New("invalid token")
-		}
 
-		r2 := r.WithContext(context.WithValue(r.Context(), "auth", Auth{
-			ID:       claims.ID,
-			Username: claims.Username,
-		}))
-
+		r2 := r.WithContext(context.WithValue(r.Context(), KeyClaims, claims))
 		next.ServeHTTP(w, r2)
 		return nil
 	})
