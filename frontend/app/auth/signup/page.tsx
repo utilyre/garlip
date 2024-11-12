@@ -3,19 +3,21 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormEvent, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { FormEvent, useState } from "react";
 
 function capitalizeFirstLetter(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export default function Login() {
+export default function SignUp() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [fullname, setFullname] = useState("");
 
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [fullnameError, setFullnameError] = useState("");
   const [formError, setFormError] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
@@ -24,12 +26,12 @@ export default function Login() {
     event.preventDefault();
 
     try {
-      const response = await fetch("/api/v1/auth/login", {
+      const response = await fetch("/api/v1/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, fullname }),
       });
 
       if (response.status === 422) {
@@ -38,18 +40,27 @@ export default function Login() {
           case "username":
             setUsernameError(capitalizeFirstLetter(error.message));
             setPasswordError("");
+            setFullnameError("");
             setFormError("");
             break;
           case "password":
             setPasswordError(capitalizeFirstLetter(error.message));
             setUsernameError("");
+            setFullnameError("");
+            setFormError("");
+            break;
+          case "fullname":
+            setFullnameError(capitalizeFirstLetter(error.message));
+            setUsernameError("");
+            setPasswordError("");
             setFormError("");
             break;
         }
-      } else if (response.status === 404) {
-        setFormError("Username or password incorrect");
+      } else if (response.status === 409) {
+        setFormError("Account already exists");
         setUsernameError("");
         setPasswordError("");
+        setFullnameError("");
       } else if (!response.ok) {
         throw new Error(`http failure with status ${response.status}`);
       }
@@ -62,7 +73,7 @@ export default function Login() {
     <main className="flex h-screen flex-col items-center justify-center p-4">
       <div className="flex w-full flex-col gap-10 sm:w-1/2 md:w-1/4">
         <h1 className="text-center text-2xl font-bold sm:text-4xl">
-          Login to Garlip
+          Create an account
         </h1>
 
         <form onSubmit={onSubmit} className="space-y-4">
@@ -110,6 +121,19 @@ export default function Login() {
                 <p className="text-sm text-destructive">{passwordError}</p>
               )}
             </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="fullname">Full name</Label>
+              <Input
+                id="fullname"
+                type="text"
+                value={fullname}
+                onChange={(e) => setFullname(e.target.value)}
+              />
+              {fullnameError && (
+                <p className="text-sm text-destructive">{fullnameError}</p>
+              )}
+            </div>
           </div>
 
           <div className="space-y-1">
@@ -119,7 +143,7 @@ export default function Login() {
               </p>
             )}
             <Button type="submit" className="w-full">
-              Login
+              Sign Up
             </Button>
           </div>
         </form>
