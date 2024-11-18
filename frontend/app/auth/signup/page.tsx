@@ -29,7 +29,7 @@ export default function SignUp() {
     event.preventDefault();
 
     try {
-      const response = await fetch("/api/v1/auth/register", {
+      const signupResponse = await fetch("/api/v1/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -37,8 +37,8 @@ export default function SignUp() {
         body: JSON.stringify({ username, password, fullname }),
       });
 
-      if (response.status === 422) {
-        const error = await response.json();
+      if (signupResponse.status === 422) {
+        const error = await signupResponse.json();
         switch (error.field) {
           case "username":
             setUsernameError(capitalizeFirstLetter(error.message));
@@ -61,15 +61,34 @@ export default function SignUp() {
         }
         return;
       }
-      if (response.status === 409) {
+      if (signupResponse.status === 409) {
         setFormError("Account already exists");
         setUsernameError("");
         setPasswordError("");
         setFullnameError("");
         return;
       }
-      if (!response.ok) {
-        throw new Error(`http failure with status ${response.status}`);
+      if (!signupResponse.ok) {
+        throw new Error(
+          `http failure on signup with status ${signupResponse.status}`,
+        );
+      }
+
+      const loginResponse = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      // NOTE: do not handle not found or validation errors since we just signed
+      // up with the same information
+
+      if (!loginResponse.ok) {
+        throw new Error(
+          `http failure on login with status ${signupResponse.status}`,
+        );
       }
 
       router.push("/");
