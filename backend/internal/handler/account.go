@@ -37,6 +37,11 @@ func (ah *AccountHandler) DeleteMe(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:   cookieJWT,
+		Path:   "/",
+		MaxAge: -1,
+	})
 	return xmate.WriteJSON(w, http.StatusOK, map[string]any{
 		"message": "Account has been deleted",
 	})
