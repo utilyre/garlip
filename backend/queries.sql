@@ -18,6 +18,9 @@ FROM accounts
 WHERE username = $1
 LIMIT 1;
 
+-- name: DeleteAccountByID :exec
+DELETE FROM accounts WHERE id = $1;
+
 -- name: GetAnswersCount :many
 SELECT q.stem stem, o.description description, o.correct correct, COUNT(*) num_answer
 FROM answers oa

@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"garlip/internal/queries"
 
 	"github.com/jackc/pgx/v5/pgconn"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AccountService struct {
@@ -53,6 +55,35 @@ func (as AccountService) UpdateByID(ctx context.Context, params AccountUpdateByI
 		return ErrUsernameTaken
 	}
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type AccountDeleteParams struct {
+	Username string
+	Password []byte
+}
+
+func (as *AccountService) DeleteByUsername(ctx context.Context, params AccountDeleteParams) error {
+	authInfo, err := as.Queries.GetAccountAuthInfo(ctx, params.Username)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrAccountNotFound
+	}
+	if err != nil {
+		return err
+	}
+
+	err = bcrypt.CompareHashAndPassword(authInfo.Password, params.Password)
+	if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+		return ErrAccountNotFound
+	}
+	if err != nil {
+		return err
+	}
+
+	if err := as.Queries.DeleteAccountByID(ctx, authInfo.ID); err != nil {
 		return err
 	}
 
