@@ -5,12 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 function capitalizeFirstLetter(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export default function SignUp() {
+  const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fullname, setFullname] = useState("");
@@ -56,14 +59,20 @@ export default function SignUp() {
             setFormError("");
             break;
         }
-      } else if (response.status === 409) {
+        return;
+      }
+      if (response.status === 409) {
         setFormError("Account already exists");
         setUsernameError("");
         setPasswordError("");
         setFullnameError("");
-      } else if (!response.ok) {
+        return;
+      }
+      if (!response.ok) {
         throw new Error(`http failure with status ${response.status}`);
       }
+
+      router.push("/");
     } catch (error) {
       console.error("fetch failed due to", error);
     }
