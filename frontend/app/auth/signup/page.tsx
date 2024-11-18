@@ -14,7 +14,7 @@ export default function SignUp() {
         if (response.status >= 200 && response.status < 300) {
           router.replace("/");
         }
-        if (!response.ok) {
+        if (response.status !== 401 && !response.ok) {
           throw new Error(`http failure with status ${response.status}`);
         }
       } catch (error) {
