@@ -47,44 +47,44 @@ func (a *AuthService) Register(ctx context.Context, params AuthRegisterParams) e
 	if len(params.Username) == 0 {
 		return ValidationError{
 			Field:   "username",
-			Message: "required",
+			Message: "Required",
 		}
 	} else if len(params.Username) < 3 {
 		return ValidationError{
 			Field:   "username",
-			Message: "shorter than 3 chars",
+			Message: "Shorter than 3 chars",
 		}
 	} else if len(params.Username) > 50 {
 		return ValidationError{
 			Field:   "username",
-			Message: "longer than 50 chars",
+			Message: "Longer than 50 chars",
 		}
 	} else if !reUsername.MatchString(params.Username) {
 		return ValidationError{
 			Field:   "username",
-			Message: "contains chars other than alphanumeric and underscore",
+			Message: "Contains chars other than alphanumeric and underscore",
 		}
 	}
 	if len(params.Password) == 0 {
 		return ValidationError{
 			Field:   "password",
-			Message: "required",
+			Message: "Required",
 		}
 	} else if len(params.Password) < 8 {
 		return ValidationError{
 			Field:   "password",
-			Message: "shorter than 8 chars",
+			Message: "Shorter than 8 chars",
 		}
 	} else if len(params.Password) > 1024 {
 		return ValidationError{
 			Field:   "password",
-			Message: "longer than 1024 chars",
+			Message: "Longer than 1024 chars",
 		}
 	}
 	if len(params.Fullname) > 100 {
 		return ValidationError{
 			Field:   "fullname",
-			Message: "longer than 100 chars",
+			Message: "Longer than 100 chars",
 		}
 	}
 
@@ -123,38 +123,38 @@ func (a *AuthService) Login(ctx context.Context, params AuthLoginParams) (token 
 	if len(params.Username) == 0 {
 		return "", ValidationError{
 			Field:   "username",
-			Message: "required",
+			Message: "Required",
 		}
 	} else if len(params.Username) < 3 {
 		return "", ValidationError{
 			Field:   "username",
-			Message: "shorter than 3 chars",
+			Message: "Shorter than 3 chars",
 		}
 	} else if len(params.Username) > 50 {
 		return "", ValidationError{
 			Field:   "username",
-			Message: "longer than 50 chars",
+			Message: "Longer than 50 chars",
 		}
 	} else if !reUsername.MatchString(params.Username) {
 		return "", ValidationError{
 			Field:   "username",
-			Message: "contains chars other than alphanumeric and underscore",
+			Message: "Contains chars other than alphanumeric and underscore",
 		}
 	}
 	if len(params.Password) == 0 {
 		return "", ValidationError{
 			Field:   "password",
-			Message: "required",
+			Message: "Required",
 		}
 	} else if len(params.Password) < 8 {
 		return "", ValidationError{
 			Field:   "password",
-			Message: "shorter than 8 chars",
+			Message: "Shorter than 8 chars",
 		}
 	} else if len(params.Password) > 1024 {
 		return "", ValidationError{
 			Field:   "password",
-			Message: "longer than 1024 chars",
+			Message: "Longer than 1024 chars",
 		}
 	}
 

@@ -115,7 +115,7 @@ func (ah *AuthHandler) Authenticate(next http.Handler) http.Handler {
 	return xmate.HandleFunc(func(w http.ResponseWriter, r *http.Request) error {
 		cookie, err := r.Cookie(cookieJWT)
 		if errors.Is(err, http.ErrNoCookie) {
-			return Errorf(http.StatusUnauthorized, "Expired token")
+			return Errorf(http.StatusUnauthorized, "Non-existent or expired token")
 		}
 		if err != nil {
 			return err

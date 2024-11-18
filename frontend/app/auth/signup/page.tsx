@@ -7,10 +7,6 @@ import { Eye, EyeOff } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
-function capitalizeFirstLetter(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
 export default function SignUp() {
   const router = useRouter();
 
@@ -41,19 +37,19 @@ export default function SignUp() {
         const error = await signupResponse.json();
         switch (error.field) {
           case "username":
-            setUsernameError(capitalizeFirstLetter(error.message));
+            setUsernameError(error.message);
             setPasswordError("");
             setFullnameError("");
             setFormError("");
             break;
           case "password":
-            setPasswordError(capitalizeFirstLetter(error.message));
+            setPasswordError(error.message);
             setUsernameError("");
             setFullnameError("");
             setFormError("");
             break;
           case "fullname":
-            setFullnameError(capitalizeFirstLetter(error.message));
+            setFullnameError(error.message);
             setUsernameError("");
             setPasswordError("");
             setFormError("");
