@@ -67,6 +67,23 @@ type AccountDeleteParams struct {
 }
 
 func (as *AccountService) DeleteByUsername(ctx context.Context, params AccountDeleteParams) error {
+	if len(params.Username) < 3 {
+		return ValidationError{
+			Field:   "username",
+			Message: "shorter than 3 chars",
+		}
+	} else if len(params.Username) > 50 {
+		return ValidationError{
+			Field:   "username",
+			Message: "longer than 50 chars",
+		}
+	} else if !reUsername.MatchString(params.Username) {
+		return ValidationError{
+			Field:   "username",
+			Message: "contains chars other than alphanumeric and underscore",
+		}
+	}
+
 	authInfo, err := as.Queries.GetAccountAuthInfo(ctx, params.Username)
 	if errors.Is(err, sql.ErrNoRows) {
 		return ErrAccountNotFound

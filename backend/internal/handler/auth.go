@@ -105,10 +105,10 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) error {
 
 const cookieJWT = "jwt"
 
-type Key int
+type ctxKey int
 
 const (
-	KeyClaims = iota + 1
+	keyClaims = iota + 1
 )
 
 func (ah *AuthHandler) Authenticate(next http.Handler) http.Handler {
@@ -132,8 +132,12 @@ func (ah *AuthHandler) Authenticate(next http.Handler) http.Handler {
 			return err
 		}
 
-		r2 := r.WithContext(context.WithValue(r.Context(), KeyClaims, claims))
+		r2 := r.WithContext(context.WithValue(r.Context(), keyClaims, claims))
 		next.ServeHTTP(w, r2)
 		return nil
 	})
+}
+
+func GetClaims(r *http.Request) *service.Claims {
+	return r.Context().Value(keyClaims).(*service.Claims)
 }

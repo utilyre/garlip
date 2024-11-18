@@ -33,7 +33,8 @@ func main() {
 	defer db.Close(context.Background())
 
 	pgQueries := queries.New(db)
-	authSvc := &service.AuthService{Queries: pgQueries}
+	authSVC := &service.AuthService{Queries: pgQueries}
+	accountSVC := &service.AccountService{Queries: pgQueries}
 
 	mux := chi.NewMux()
 	apiV1 := chi.NewRouter()
@@ -44,11 +45,19 @@ func main() {
 	mux.Get("/helloworld", xmate.HandleFunc(handleHelloWorld))
 	mux.Mount("/api/v1", apiV1)
 
+	authHandler := &handler.AuthHandler{AuthSVC: authSVC}
 	apiV1.Route("/auth", func(r chi.Router) {
-		authHandler := &handler.AuthHandler{AuthSVC: authSvc}
-
 		r.Post("/register", xmate.HandleFunc(authHandler.Register))
 		r.Post("/login", xmate.HandleFunc(authHandler.Login))
+	})
+
+	apiV1.Route("/accounts", func(r chi.Router) {
+		accountHandler := &handler.AccountHandler{AccountSVC: accountSVC}
+
+		r.Route("/me", func(r chi.Router) {
+			r.Use(authHandler.Authenticate)
+			r.Delete("/", xmate.HandleFunc(accountHandler.DeleteMe))
+		})
 	})
 
 	log.Printf("Listening on http://localhost:%s\n", port)
