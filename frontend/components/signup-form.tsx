@@ -3,22 +3,24 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormEvent, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Props = {
   className?: string;
 };
 
-export default function LoginForm(props: Props) {
+export default function SignUpForm(props: Props) {
   const router = useRouter();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [fullname, setFullname] = useState("");
 
   const [usernameError, setUsernameError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [fullnameError, setFullnameError] = useState("");
   const [formError, setFormError] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +29,52 @@ export default function LoginForm(props: Props) {
     event.preventDefault();
 
     try {
-      const response = await fetch("/api/v1/auth/login", {
+      const signupResponse = await fetch("/api/v1/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password, fullname }),
+      });
+
+      if (signupResponse.status === 422) {
+        const error = await signupResponse.json();
+        switch (error.field) {
+          case "username":
+            setUsernameError(error.message);
+            setPasswordError("");
+            setFullnameError("");
+            setFormError("");
+            break;
+          case "password":
+            setPasswordError(error.message);
+            setUsernameError("");
+            setFullnameError("");
+            setFormError("");
+            break;
+          case "fullname":
+            setFullnameError(error.message);
+            setUsernameError("");
+            setPasswordError("");
+            setFormError("");
+            break;
+        }
+        return;
+      }
+      if (signupResponse.status === 409) {
+        setFormError("Account already exists");
+        setUsernameError("");
+        setPasswordError("");
+        setFullnameError("");
+        return;
+      }
+      if (!signupResponse.ok) {
+        throw new Error(
+          `http failure on signup with status ${signupResponse.status}`,
+        );
+      }
+
+      const loginResponse = await fetch("/api/v1/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,30 +82,13 @@ export default function LoginForm(props: Props) {
         body: JSON.stringify({ username, password }),
       });
 
-      if (response.status === 422) {
-        const error = await response.json();
-        switch (error.field) {
-          case "username":
-            setUsernameError(error.message);
-            setPasswordError("");
-            setFormError("");
-            break;
-          case "password":
-            setPasswordError(error.message);
-            setUsernameError("");
-            setFormError("");
-            break;
-        }
-        return;
-      }
-      if (response.status === 404) {
-        setFormError("Username or password incorrect");
-        setUsernameError("");
-        setPasswordError("");
-        return;
-      }
-      if (!response.ok) {
-        throw new Error(`http failure with status ${response.status}`);
+      // NOTE: do not handle not found or validation errors since we just signed
+      // up with the same information
+
+      if (!loginResponse.ok) {
+        throw new Error(
+          `http failure on login with status ${signupResponse.status}`,
+        );
       }
 
       router.push("/");
@@ -70,7 +100,7 @@ export default function LoginForm(props: Props) {
   return (
     <div className={`flex flex-col gap-10 ${props.className ?? ""}`}>
       <h1 className="text-center text-2xl font-bold sm:text-4xl">
-        Login to Garlip
+        Create an account
       </h1>
 
       <form onSubmit={onSubmit} className="space-y-4">
@@ -118,6 +148,19 @@ export default function LoginForm(props: Props) {
               <p className="text-sm text-destructive">{passwordError}</p>
             )}
           </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="fullname">Full name</Label>
+            <Input
+              id="fullname"
+              type="text"
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
+            />
+            {fullnameError && (
+              <p className="text-sm text-destructive">{fullnameError}</p>
+            )}
+          </div>
         </div>
 
         <div className="space-y-1">
@@ -125,7 +168,7 @@ export default function LoginForm(props: Props) {
             <p className="text-center text-sm text-destructive">{formError}</p>
           )}
           <Button type="submit" className="w-full">
-            Login
+            Sign Up
           </Button>
         </div>
       </form>
