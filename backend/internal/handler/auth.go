@@ -141,3 +141,9 @@ func (ah *AuthHandler) Authenticate(next http.Handler) http.Handler {
 func GetClaims(r *http.Request) *service.Claims {
 	return r.Context().Value(keyClaims).(*service.Claims)
 }
+
+func (ah *AuthHandler) Check(w http.ResponseWriter, r *http.Request) error {
+	return xmate.WriteJSON(w, http.StatusOK, map[string]any{
+		"message": "You are logged in",
+	})
+}

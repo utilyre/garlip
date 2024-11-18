@@ -49,6 +49,11 @@ func main() {
 	apiV1.Route("/auth", func(r chi.Router) {
 		r.Post("/register", xmate.HandleFunc(authHandler.Register))
 		r.Post("/login", xmate.HandleFunc(authHandler.Login))
+
+		r.Group(func(r chi.Router) {
+			r.Use(authHandler.Authenticate)
+			r.Get("/check", xmate.HandleFunc(authHandler.Check))
+		})
 	})
 
 	apiV1.Route("/accounts", func(r chi.Router) {
