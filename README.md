@@ -1,7 +1,7 @@
 # Garlip
 
 Garlip is a question bank capable of creating forms and analyzing answers
-according to respondents, questions, and topics.
+with respect to participant, question, and topic.
 
 ## Development
 
